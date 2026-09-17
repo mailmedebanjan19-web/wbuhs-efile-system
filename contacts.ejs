@@ -1,0 +1,63 @@
+<%- include('partials/header', { title: 'Officers Directory - WBUHS E-File System' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-address-book text-primary me-2"></i> WBUHS Officers Contact Directory</h3>
+    <p class="text-muted mb-0">Official internal contacts directory for University Officers, Executives & Heads of Department.</p>
+  </div>
+  <div class="w-25">
+    <input type="text" id="contactSearch" class="form-control" placeholder="Search officer by name or dept..." onkeyup="filterContacts()">
+  </div>
+</div>
+
+<div class="row g-4" id="contactsGrid">
+  <% contacts.forEach(officer => { %>
+    <div class="col-md-6 col-lg-4 contact-card-item">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 50px; height: 50px;">
+              <%= officer.name.charAt(0) %>
+            </div>
+            <div>
+              <h5 class="fw-bold text-dark mb-0 contact-name"><%= officer.name %></h5>
+              <span class="badge bg-light text-dark border"><%= officer.designation %></span>
+            </div>
+          </div>
+
+          <div class="small text-muted mb-3 border-top pt-2">
+            <div class="mb-1"><i class="fa-solid fa-building text-primary me-2"></i> <span class="contact-dept"><%= officer.department %></span></div>
+            <div class="mb-1"><i class="fa-solid fa-envelope text-info me-2"></i> <a href="mailto:<%= officer.email %>" class="text-decoration-none"><%= officer.email %></a></div>
+            <div class="mb-1"><i class="fa-solid fa-at text-secondary me-2"></i> Handle: <code><%= officer.handle %></code></div>
+            <div><i class="fa-solid fa-phone text-success me-2"></i> <%= officer.phone %> (Ext: <strong><%= officer.extension %></strong>)</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <span class="badge bg-success">Active Officer</span>
+            <a href="/create-file" class="btn btn-outline-primary btn-sm">
+              <i class="fa-solid fa-paper-plane me-1"></i> Send File
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<script>
+  function filterContacts() {
+    const q = document.getElementById('contactSearch').value.toLowerCase();
+    const cards = document.querySelectorAll('.contact-card-item');
+    cards.forEach(card => {
+      const name = card.querySelector('.contact-name').innerText.toLowerCase();
+      const dept = card.querySelector('.contact-dept').innerText.toLowerCase();
+      if (name.includes(q) || dept.includes(q)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

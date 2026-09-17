@@ -1,0 +1,100 @@
+<%- include('partials/header', { title: 'File Search Results - WBUHS E-File System' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-magnifying-glass text-primary me-2"></i> E-File Search Results</h3>
+    <p class="text-muted mb-0">Search query: "<strong class="text-primary"><%= query %></strong>" • Found <strong><%= results.length %></strong> file(s)</p>
+  </div>
+</div>
+
+<!-- Search Input Card -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body p-3">
+    <form action="/search" method="GET" class="row g-2">
+      <div class="col-md-10">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+          <input type="text" class="form-control" name="q" value="<%= query %>" placeholder="Search by File Number, Subject, Category, Officer, Priority..." required>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100 fw-bold">Search Files</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Results Table -->
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <% if (results.length === 0) { %>
+      <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-folder-open fs-1 mb-2"></i>
+        <h5>No files matching your search query.</h5>
+        <p class="small">Try searching by File Number (e.g. WBUHS), Subject keywords, or Category.</p>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>File Number</th>
+              <th>Subject</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Current Location</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% results.forEach(file => { %>
+              <tr>
+                <td class="fw-bold text-primary"><%= file.fileNo %></td>
+                <td>
+                  <div class="fw-semibold text-dark"><%= file.subject %></div>
+                  <small class="text-muted"><i class="fa-solid fa-paperclip"></i> <%= file.attachments ? file.attachments.length : 0 %> attachment(s)</small>
+                </td>
+                <td><span class="badge bg-light text-dark border"><%= file.category %></span></td>
+                <td>
+                  <% if (file.priority === 'Immediate') { %>
+                    <span class="badge bg-danger">Immediate</span>
+                  <% } else if (file.priority === 'Urgent') { %>
+                    <span class="badge bg-warning text-dark">Urgent</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">Normal</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="fw-bold text-dark"><%= file.currentHolderName %></div>
+                  <small class="text-muted"><%= file.currentHolderDesignation %></small>
+                </td>
+                <td>
+                  <% if (file.status === 'Approved') { %>
+                    <span class="badge bg-success">Approved</span>
+                  <% } else if (file.status === 'Returned') { %>
+                    <span class="badge bg-danger">Returned</span>
+                  <% } else { %>
+                    <span class="badge bg-info text-white">In Process</span>
+                  <% } %>
+                </td>
+                <td class="small text-muted"><%= new Date(file.createdAt).toLocaleDateString('en-IN') %></td>
+                <td class="text-end">
+                  <a href="/file/<%= file.id %>" class="btn btn-primary btn-sm me-1">
+                    <i class="fa-solid fa-folder-open me-1"></i> Open
+                  </a>
+                  <a href="/file/<%= file.id %>/tracking" class="btn btn-outline-info btn-sm">
+                    <i class="fa-solid fa-route me-1"></i> Track
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

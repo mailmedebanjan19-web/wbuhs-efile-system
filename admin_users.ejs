@@ -1,0 +1,262 @@
+<%- include('partials/header', { title: 'User Control Panel - WBUHS E-File System' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-users-gear text-warning me-2"></i> Admin Panel - User & Access Management</h3>
+    <p class="text-muted mb-0">Create, edit, remodify users, update roles, and reset password protected credentials.</p>
+  </div>
+  <button class="btn btn-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    <i class="fa-solid fa-user-plus me-1"></i> Add New Officer Account
+  </button>
+</div>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    <i class="fa-solid fa-circle-check me-2"></i> <%= success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Officer Name</th>
+            <th>Email / Handle</th>
+            <th>Role & Access</th>
+            <th>Designation</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(user => { %>
+            <tr>
+              <td>
+                <div class="fw-bold text-dark"><%= user.name %></div>
+                <small class="text-muted"><i class="fa-solid fa-phone me-1"></i><%= user.phone %></small>
+              </td>
+              <td>
+                <div class="fw-semibold text-primary"><%= user.email %></div>
+                <small class="text-secondary">Handle: <code><%= user.handle %></code></small>
+              </td>
+              <td>
+                <% if (user.role === 'SUPER ADMIN') { %>
+                  <span class="badge bg-danger"><i class="fa-solid fa-shield-halved me-1"></i> SUPER ADMIN</span>
+                <% } else if (user.role === 'Registrar') { %>
+                  <span class="badge bg-info"><i class="fa-solid fa-user-gear me-1"></i> Registrar</span>
+                <% } else if (user.role === 'Finance Officer') { %>
+                  <span class="badge bg-warning text-dark"><i class="fa-solid fa-coins me-1"></i> Finance Officer</span>
+                <% } else if (user.role === 'Controller of Exams') { %>
+                  <span class="badge bg-secondary"><i class="fa-solid fa-graduation-cap me-1"></i> Controller of Exams</span>
+                <% } else { %>
+                  <span class="badge bg-light text-dark border">Officer</span>
+                <% } %>
+              </td>
+              <td><%= user.designation %></td>
+              <td class="small text-muted"><%= user.department %></td>
+              <td>
+                <% if (user.status === 'Active') { %>
+                  <span class="badge bg-success">Active</span>
+                <% } else { %>
+                  <span class="badge bg-secondary">Inactive</span>
+                <% } %>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-outline-primary btn-sm me-1" onclick='openEditModal(<%- JSON.stringify(user) %>)'>
+                  <i class="fa-solid fa-pen-to-square me-1"></i> Remodify
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick='openResetModal(<%- JSON.stringify(user) %>)'>
+                  <i class="fa-solid fa-key me-1"></i> Reset Password
+                </button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create User -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i> Create New Officer Account</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/users/create" method="POST">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Full Officer Name *</label>
+              <input type="text" class="form-control" name="name" required placeholder="e.g. Dr. Sourav Bandyopadhyay">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email Address *</label>
+              <input type="email" class="form-control" name="email" required placeholder="e.g. sourav@wbuhs.ac.in">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Handle / Username *</label>
+              <input type="text" class="form-control" name="handle" required placeholder="e.g. sourav_b">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Password *</label>
+              <input type="password" class="form-control" name="password" required placeholder="Set password">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">System Role *</label>
+              <select class="form-select" name="role" required>
+                <option value="Officer">Officer</option>
+                <option value="Registrar">Registrar</option>
+                <option value="Finance Officer">Finance Officer</option>
+                <option value="Controller of Exams">Controller of Exams</option>
+                <option value="SUPER ADMIN">SUPER ADMIN</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Designation</label>
+              <input type="text" class="form-control" name="designation" placeholder="e.g. Assistant Registrar">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Department</label>
+              <input type="text" class="form-control" name="department" placeholder="e.g. Academic Cell">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Office Phone / Extension</label>
+              <input type="text" class="form-control" name="phone" placeholder="+91 33 2358 9396 Ext 108">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary fw-bold">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Remodify User -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i> Remodify Officer Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/users/update" method="POST">
+        <input type="hidden" name="id" id="edit_id">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Full Officer Name</label>
+              <input type="text" class="form-control" name="name" id="edit_name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email Address</label>
+              <input type="email" class="form-control" name="email" id="edit_email" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Handle / Username</label>
+              <input type="text" class="form-control" name="handle" id="edit_handle" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Role & Access Level</label>
+              <select class="form-select" name="role" id="edit_role">
+                <option value="Officer">Officer</option>
+                <option value="Registrar">Registrar</option>
+                <option value="Finance Officer">Finance Officer</option>
+                <option value="Controller of Exams">Controller of Exams</option>
+                <option value="SUPER ADMIN">SUPER ADMIN</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Designation</label>
+              <input type="text" class="form-control" name="designation" id="edit_designation">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Department</label>
+              <input type="text" class="form-control" name="department" id="edit_department">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Phone / Extension</label>
+              <input type="text" class="form-control" name="phone" id="edit_phone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Account Status</label>
+              <select class="form-select" name="status" id="edit_status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-dark fw-bold">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reset Password -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-key me-2"></i> Admin Password Reset</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/users/reset-password" method="POST">
+        <input type="hidden" name="id" id="reset_id">
+        <div class="modal-body">
+          <p>Reset password for officer: <strong id="reset_user_name" class="text-danger"></strong></p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">New Password</label>
+            <input type="password" class="form-control" name="newPassword" required placeholder="Enter new password">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger fw-bold">Reset Password Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openEditModal(user) {
+    document.getElementById('edit_id').value = user.id;
+    document.getElementById('edit_name').value = user.name;
+    document.getElementById('edit_email').value = user.email;
+    document.getElementById('edit_handle').value = user.handle || '';
+    document.getElementById('edit_role').value = user.role;
+    document.getElementById('edit_designation').value = user.designation || '';
+    document.getElementById('edit_department').value = user.department || '';
+    document.getElementById('edit_phone').value = user.phone || '';
+    document.getElementById('edit_status').value = user.status || 'Active';
+    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+  }
+
+  function openResetModal(user) {
+    document.getElementById('reset_id').value = user.id;
+    document.getElementById('reset_user_name').innerText = user.name + ' (' + user.email + ')';
+    new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+  }
+</script>
+
+<%- include('partials/footer') %>

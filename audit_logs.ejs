@@ -1,0 +1,44 @@
+<%- include('partials/header', { title: 'Audit Trail Logs - WBUHS E-File System' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-list-check text-info me-2"></i> System Audit Trail Logs</h3>
+    <p class="text-muted mb-0">Record of security, file creation, password changes, and user management events.</p>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <% if (logs.length === 0) { %>
+      <div class="text-center py-5 text-muted">
+        <i class="fa-solid fa-clock-rotate-left fs-1 mb-2"></i>
+        <p>No audit logs recorded yet.</p>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Timestamp</th>
+              <th>Officer</th>
+              <th>Action</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% logs.forEach(log => { %>
+              <tr>
+                <td class="small text-muted"><%= new Date(log.timestamp).toLocaleString('en-IN') %></td>
+                <td class="fw-bold text-dark"><%= log.userName %></td>
+                <td><span class="badge bg-info text-white"><%= log.action %></span></td>
+                <td class="small text-secondary"><%= log.details %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

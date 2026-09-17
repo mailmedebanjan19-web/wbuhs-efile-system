@@ -1,0 +1,96 @@
+<%- include('partials/header', { title: 'Create E-File - WBUHS E-File System' }) %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1"><i class="fa-solid fa-file-circle-plus text-primary me-2"></i> Initiate New Internal E-File</h3>
+        <p class="text-muted mb-0">Create an official university electronic file, append initial green sheet note, and attach supporting correspondence/documents.</p>
+      </div>
+      <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i> File Details & Initial Noting</h5>
+      </div>
+      <div class="card-body p-4">
+
+        <form action="/create-file" method="POST" enctype="multipart/form-data">
+          
+          <div class="row g-3 mb-3">
+            <div class="col-md-12">
+              <label for="subject" class="form-label fw-bold">File Subject / Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-lg" id="subject" name="subject" required placeholder="e.g. Sanction of PG Medical Research Grant 2026-27">
+            </div>
+
+            <div class="col-md-4">
+              <label for="category" class="form-label fw-semibold">File Category</label>
+              <select class="form-select" id="category" name="category">
+                <option value="Academics & Research">Academics & Research</option>
+                <option value="Finance & Accounts">Finance & Accounts</option>
+                <option value="Examination & Evaluation">Examination & Evaluation</option>
+                <option value="Establishment & Personnel">Establishment & Personnel</option>
+                <option value="IT & Capital Procurement">IT & Capital Procurement</option>
+                <option value="General Administration">General Administration</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="priority" class="form-label fw-semibold">Priority Level</label>
+              <select class="form-select" id="priority" name="priority">
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Immediate">Immediate</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="confidentiality" class="form-label fw-semibold">Confidentiality</label>
+              <select class="form-select" id="confidentiality" name="confidentiality">
+                <option value="Standard">Standard</option>
+                <option value="Confidential">Confidential</option>
+                <option value="Secret">Secret</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Initial Green Sheet Note -->
+          <div class="mb-4">
+            <div class="p-3 mb-2 rounded bg-light border-start border-success border-4">
+              <label for="initialNote" class="form-label fw-bold text-success mb-1">
+                <i class="fa-solid fa-note-sticky me-1"></i> Initial Green Sheet Note (Note No. 1)
+              </label>
+              <div class="small text-muted mb-2">Write the opening official notation for this file. This will appear on Note 1 of the Green Sheet.</div>
+              <textarea class="form-control font-monospace" id="initialNote" name="initialNote" rows="5" required placeholder="Write official note here... e.g., 'Submitted for administrative approval regarding research grant sanction...'"></textarea>
+            </div>
+          </div>
+
+          <!-- Attachments Section -->
+          <div class="mb-4">
+            <label for="attachments" class="form-label fw-bold">
+              <i class="fa-solid fa-paperclip text-primary me-1"></i> Attach Correspondence & Documents
+            </label>
+            <div class="small text-muted mb-2">Support files: PDF documents (`.pdf`), Excel spreadsheets (`.xlsx`), Word documents (`.docx`), Images (`.png`, `.jpg`). You can select multiple files.</div>
+            <input type="file" class="form-control" id="attachments" name="attachments" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg">
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="/dashboard" class="btn btn-light border px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary fw-bold px-5">
+              <i class="fa-solid fa-paper-plane me-1"></i> Create & Initiate File
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

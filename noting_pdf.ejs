@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Green Sheet Noting - <%= file.fileNo %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; background: white; }
+    }
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Times New Roman', Times, serif;
+      color: #1b5e20;
+    }
+    .print-paper {
+      background-color: #eafaf1;
+      border: 2px solid #27ae60;
+      border-left: 8px solid #2e7d32;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 40px;
+      margin: 30px auto;
+      max-width: 900px;
+    }
+    .wbuhs-header-title {
+      text-align: center;
+      border-bottom: 2px double #2e7d32;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .noting-block {
+      background-color: #ffffff;
+      border: 1px solid #c8e6c9;
+      border-left: 4px solid #2e7d32;
+      padding: 20px;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    .note-num {
+      background-color: #2e7d32;
+      color: white;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 12px;
+      font-family: sans-serif;
+      font-size: 0.85rem;
+    }
+    .note-text {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      white-space: pre-line;
+      color: #0f4012;
+    }
+    .sig-seal {
+      text-align: right;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px dashed #a5d6a7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print text-center py-3 bg-dark text-white">
+    <button onclick="window.print()" class="btn btn-success fw-bold px-4 me-2">
+      <i class="fa-solid fa-print me-1"></i> Print / Save as PDF
+    </button>
+    <button onclick="window.close()" class="btn btn-outline-light btn-sm">
+      <i class="fa-solid fa-xmark me-1"></i> Close Window
+    </button>
+  </div>
+
+  <div class="print-paper">
+    
+    <div class="wbuhs-header-title">
+      <h3 class="fw-bold mb-1" style="color: #0b2545;">THE WEST BENGAL UNIVERSITY OF HEALTH SCIENCES</h3>
+      <h6 class="mb-2 text-secondary" style="font-family: sans-serif;">DD-36, Sector-1, Salt Lake, Kolkata - 700064</h6>
+      <h5 class="fw-bold text-success mt-3 mb-0" style="letter-spacing: 1px;">OFFICIAL GREEN SHEET NOTING</h5>
+    </div>
+
+    <!-- File Meta -->
+    <div class="row g-2 mb-4 p-3 bg-white rounded border border-success" style="font-family: sans-serif; font-size: 0.9rem;">
+      <div class="col-md-6">
+        <strong>FILE NO:</strong> <span class="text-primary fw-bold"><%= file.fileNo %></span>
+      </div>
+      <div class="col-md-6 text-end">
+        <strong>CATEGORY:</strong> <%= file.category %> | <strong>PRIORITY:</strong> <%= file.priority %>
+      </div>
+      <div class="col-md-12 mt-2">
+        <strong>SUBJECT:</strong> <span class="fw-bold text-dark"><%= file.subject %></span>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <% notings.forEach(note => { %>
+      <div class="noting-block">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="note-num">NOTE NO. <%= note.noteNo %></span>
+          <small class="text-muted" style="font-family: sans-serif;"><%= new Date(note.timestamp).toLocaleString('en-IN') %></small>
+        </div>
+        
+        <div class="note-text">
+          <%= note.content %>
+        </div>
+
+        <div class="sig-seal">
+          <div style="font-family: sans-serif;">
+            <div class="fw-bold text-dark"><%= note.authorName %></div>
+            <div class="small text-muted"><%= note.authorDesignation %></div>
+            <div class="small text-secondary"><%= note.authorDepartment %></div>
+            <small class="text-success fw-bold"><i class="fa-solid fa-shield-check me-1"></i> Digitally Signed & Sealed (WBUHS e-Office)</small>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+
+    <div class="text-center mt-5 pt-3 border-top text-muted small" style="font-family: sans-serif;">
+      Downloaded from WBUHS e-Office Portal on <%= new Date().toLocaleString('en-IN') %> • Valid University Document
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,336 @@
+/* WBUHS E-File (e-Office) Styling */
+
+:root {
+  --wb-navy: #0b2545;
+  --wb-blue: #134074;
+  --wb-light-blue: #8da9c4;
+  --wb-gold: #eef4d4;
+  --wb-gold-accent: #d4af37;
+  --green-noting-bg: #eafaf1;
+  --green-noting-border: #27ae60;
+  --green-noting-text: #145a32;
+  --sidebar-width: 250px;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Header & Banner */
+.gov-header {
+  background: linear-gradient(135deg, #06192a 0%, #0b3c5d 100%);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-bottom: 4px solid var(--wb-gold-accent);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.gov-emblem-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wbuhs-logo-circle {
+  width: 52px;
+  height: 52px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: #0b3c5d;
+  border: 2px solid var(--wb-gold-accent);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.gov-title-main {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.gov-sub-title {
+  font-size: 0.85rem;
+  color: #d1e8ff;
+  margin: 0;
+}
+
+.user-badge-header {
+  background-color: rgba(255, 255, 255, 0.12);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Navbar Sub Header */
+.eoffice-nav {
+  background-color: #134074;
+  padding: 8px 24px;
+}
+
+.eoffice-nav .nav-link {
+  color: #e2e8f0;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.eoffice-nav .nav-link:hover, .eoffice-nav .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Main Layout */
+.main-wrapper {
+  display: flex;
+  min-height: calc(100vh - 120px);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: #1e293b;
+  color: #f8fafc;
+  padding-top: 15px;
+  flex-shrink: 0;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  padding: 10px 20px 5px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.sidebar-menu a:hover {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+.sidebar-menu a.active {
+  background-color: #0f172a;
+  color: #38bdf8;
+  border-left-color: #38bdf8;
+  font-weight: 600;
+}
+
+.content-area {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Card Styling */
+.stat-card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: justify;
+  font-size: 22px;
+  color: white;
+}
+
+/* Green Sheet Noting View */
+.green-sheet-container {
+  background-color: var(--green-noting-bg);
+  border: 1px solid var(--green-noting-border);
+  border-left: 6px solid var(--green-noting-border);
+  border-radius: 6px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.08);
+}
+
+.green-sheet-header {
+  border-bottom: 2px solid var(--green-noting-border);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.green-note-card {
+  background-color: #ffffff;
+  border: 1px solid #c8e6c9;
+  border-left: 4px solid #2e7d32;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+.green-note-badge {
+  background-color: #2e7d32;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.green-note-content {
+  font-family: 'Georgia', serif;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #1b5e20;
+  white-space: pre-line;
+}
+
+.officer-signature-box {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #a5d6a7;
+  text-align: right;
+  font-size: 0.88rem;
+  color: #2e7d32;
+}
+
+.officer-seal {
+  display: inline-block;
+  text-align: right;
+  background-color: #f1f8e9;
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid #c8e6c9;
+}
+
+/* Split Pane View */
+.file-view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .file-view-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.correspondence-box {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Timeline Tracking */
+.tracking-timeline {
+  position: relative;
+  padding-left: 30px;
+  margin-top: 20px;
+}
+
+.tracking-timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  background-color: #3b82f6;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.timeline-icon {
+  position: absolute;
+  left: -30px;
+  top: 0;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 0 0 4px #dbeafe;
+}
+
+.timeline-content {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Quick Login Bar */
+.quick-login-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.quick-user-btn {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.quick-user-btn:hover {
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}

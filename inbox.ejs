@@ -1,0 +1,86 @@
+<%- include('partials/header', { title: 'Inbox - WBUHS E-File System' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-inbox text-primary me-2"></i> Inbox (Files Pending Your Action)</h3>
+    <p class="text-muted mb-0">Files currently held by you requiring Green Sheet Noting, approval, or forwarding.</p>
+  </div>
+  <div>
+    <a href="/create-file" class="btn btn-primary shadow-sm fw-bold">
+      <i class="fa-solid fa-plus me-1"></i> Create New File
+    </a>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <% if (files.length === 0) { %>
+      <div class="text-center py-5">
+        <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+        <h5 class="text-secondary">Your Inbox is clear!</h5>
+        <p class="text-muted small">No files are currently waiting for your attention.</p>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>File Number</th>
+              <th>Subject</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Initiator</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% files.forEach(file => { %>
+              <tr>
+                <td class="fw-bold text-primary"><%= file.fileNo %></td>
+                <td>
+                  <div class="fw-semibold text-dark"><%= file.subject %></div>
+                  <small class="text-muted"><i class="fa-solid fa-paperclip"></i> <%= file.attachments ? file.attachments.length : 0 %> attachment(s)</small>
+                </td>
+                <td><span class="badge bg-light text-dark border"><%= file.category %></span></td>
+                <td>
+                  <% if (file.priority === 'Immediate') { %>
+                    <span class="badge bg-danger"><i class="fa-solid fa-bolt me-1"></i> Immediate</span>
+                  <% } else if (file.priority === 'Urgent') { %>
+                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Urgent</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">Normal</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="small fw-semibold"><%= file.createdByName %></div>
+                </td>
+                <td>
+                  <% if (file.status === 'Approved') { %>
+                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Approved</span>
+                  <% } else if (file.status === 'Returned') { %>
+                    <span class="badge bg-danger"><i class="fa-solid fa-rotate-left me-1"></i> Returned</span>
+                  <% } else { %>
+                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Pending Action</span>
+                  <% } %>
+                </td>
+                <td class="small text-muted"><%= new Date(file.createdAt).toLocaleDateString('en-IN') %></td>
+                <td class="text-end">
+                  <a href="/file/<%= file.id %>" class="btn btn-primary btn-sm me-1">
+                    <i class="fa-solid fa-folder-open me-1"></i> Open & Note
+                  </a>
+                  <a href="/file/<%= file.id %>/tracking" class="btn btn-outline-info btn-sm">
+                    <i class="fa-solid fa-route me-1"></i> Track
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
