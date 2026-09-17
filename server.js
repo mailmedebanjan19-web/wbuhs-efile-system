@@ -24,19 +24,28 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// View engine setup (supports both views and Views for Linux case-sensitivity)
+// Multi-path view directory resolver
 app.set('view engine', 'ejs');
-app.set('views', [
-  path.join(__dirname, 'views'),
-  path.join(__dirname, 'Views'),
-  path.join(__dirname, 'src', 'views'),
-  path.join(__dirname, 'src', 'Views')
-]);
+
+// Dynamically discover all directories containing .ejs files
+function getPossibleViewDirs(baseDir) {
+  const dirs = [
+    baseDir,
+    path.join(baseDir, 'views'),
+    path.join(baseDir, 'Views'),
+    path.join(baseDir, 'wbuhs-efile-system', 'views'),
+    path.join(baseDir, 'scratch', 'wbuhs-efile-system', 'views')
+  ];
+  return dirs.filter(d => fs.existsSync(d));
+}
+
+app.set('views', getPossibleViewDirs(__dirname));
 
 // Body parser & Static files
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname)));
 
 // Session middleware
 app.use(session({
@@ -68,6 +77,78 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Resilient View Render Helper
+function renderView(res, viewName, data) {
+  // Try standard Express render
+  res.render(viewName, data, (err, html) => {
+    if (!err) {
+      return res.send(html);
+    }
+    // Fallback: search for file manually
+    console.warn(`Express render error for ${viewName}:`, err.message);
+    
+    // Check if view file exists in root or subfolders
+    const searchNames = [
+      `${viewName}.ejs`,
+      `${viewName}.EJS`,
+      `views/${viewName}.ejs`,
+      `Views/${viewName}.ejs`,
+      `wbuhs-efile-system/views/${viewName}.ejs`
+    ];
+
+    for (const sName of searchNames) {
+      const fullPath = path.join(__dirname, sName);
+      if (fs.existsSync(fullPath)) {
+        return res.sendFile(fullPath);
+      }
+    }
+
+    // Emergency embedded login fallback if views folder wasn't pushed to git
+    if (viewName === 'login') {
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Login - WBUHS E-File System</title>
+          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+        </head>
+        <body class="bg-light">
+          <div class="container py-5">
+            <div class="row justify-content-center">
+              <div class="col-md-5">
+                <div class="card shadow-lg border-0">
+                  <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0 fw-bold">The West Bengal University of Health Sciences</h4>
+                    <small>e-Office / E-File Management Portal</small>
+                  </div>
+                  <div class="card-body p-4">
+                    ${data && data.error ? `<div class="alert alert-danger">${data.error}</div>` : ''}
+                    <form action="/login" method="POST">
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Email / User ID / Handle</label>
+                        <input type="text" name="login" class="form-control" placeholder="e.g. vc@wbuhs.ac.in or programmer_4" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Officer Login</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+
+    res.status(500).send(`View render error: ${err.message}`);
+  });
+}
+
 // ---------------- ROUTES ----------------
 
 // Home Route
@@ -81,7 +162,7 @@ app.get('/', (req, res) => {
 // Login Routes
 app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/dashboard');
-  res.render('login', { error: null, success: null });
+  renderView(res, 'login', { error: null, success: null });
 });
 
 app.post('/login', (req, res) => {
@@ -89,11 +170,11 @@ app.post('/login', (req, res) => {
   const user = db.getUserByLogin(login);
 
   if (!user || !db.verifyPassword(user, password)) {
-    return res.render('login', { error: 'Invalid Email/User ID/Handle or Password.', success: null });
+    return renderView(res, 'login', { error: 'Invalid Email/User ID/Handle or Password.', success: null });
   }
 
   if (user.status !== 'Active') {
-    return res.render('login', { error: 'Your officer account is locked or inactive.', success: null });
+    return renderView(res, 'login', { error: 'Your officer account is locked or inactive.', success: null });
   }
 
   req.session.user = {
@@ -127,7 +208,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
   const outboxFiles = db.getOutboxForUser(req.session.user.id);
   const totalFilesCount = db.getFiles().length;
 
-  res.render('dashboard', {
+  renderView(res, 'dashboard', {
     inboxFiles,
     outboxFiles,
     totalFilesCount
@@ -151,27 +232,27 @@ app.get('/search', requireAuth, (req, res) => {
     );
   });
 
-  res.render('search_results', { query, results });
+  renderView(res, 'search_results', { query, results });
 });
 
 // Inbox
 app.get('/inbox', requireAuth, (req, res) => {
   res.locals.activeNav = 'inbox';
   const files = db.getInboxForUser(req.session.user.id);
-  res.render('inbox', { files });
+  renderView(res, 'inbox', { files });
 });
 
 // Outbox / Sent Files
 app.get('/outbox', requireAuth, (req, res) => {
   res.locals.activeNav = 'outbox';
   const files = db.getOutboxForUser(req.session.user.id);
-  res.render('outbox', { files });
+  renderView(res, 'outbox', { files });
 });
 
 // Create File
 app.get('/create-file', requireAuth, (req, res) => {
   res.locals.activeNav = 'create';
-  res.render('create_file');
+  renderView(res, 'create_file');
 });
 
 app.post('/create-file', requireAuth, upload.array('attachments', 10), (req, res) => {
@@ -210,7 +291,7 @@ app.get('/file/:id', requireAuth, (req, res) => {
   const movements = db.getMovementsForFile(file.id);
   const officers = db.getUsers().filter(u => u.status === 'Active');
 
-  res.render('view_file', {
+  renderView(res, 'view_file', {
     file,
     notings,
     movements,
@@ -239,7 +320,7 @@ app.post('/file/:id/attach', requireAuth, upload.array('attachments', 10), (req,
     db.transferFile(
       file.id,
       req.session.user,
-      req.session.user, // Keeps current holder
+      req.session.user,
       'Attached Files',
       `Uploaded ${newAttachments.length} additional file(s)`,
       null,
@@ -303,7 +384,7 @@ app.get('/file/:id/noting-pdf', requireAuth, (req, res) => {
   if (!file) return res.status(404).send('File not found.');
 
   const notings = db.getNotingsForFile(file.id);
-  res.render('noting_pdf', { file, notings });
+  renderView(res, 'noting_pdf', { file, notings });
 });
 
 // Track File Movement Timeline
@@ -312,36 +393,36 @@ app.get('/file/:id/tracking', requireAuth, (req, res) => {
   if (!file) return res.status(404).send('File not found.');
 
   const movements = db.getMovementsForFile(file.id);
-  res.render('tracking', { file, movements });
+  renderView(res, 'tracking', { file, movements });
 });
 
 // Contacts Directory
 app.get('/contacts', requireAuth, (req, res) => {
   res.locals.activeNav = 'contacts';
   const contacts = db.getUsers().filter(u => u.status === 'Active');
-  res.render('contacts', { contacts });
+  renderView(res, 'contacts', { contacts });
 });
 
 // Self Change Password
 app.get('/change-password', requireAuth, (req, res) => {
-  res.render('change_password', { error: null, success: null });
+  renderView(res, 'change_password', { error: null, success: null });
 });
 
 app.post('/change-password', requireAuth, (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
 
   if (newPassword !== confirmPassword) {
-    return res.render('change_password', { error: 'New password and confirm password do not match.', success: null });
+    return renderView(res, 'change_password', { error: 'New password and confirm password do not match.', success: null });
   }
 
   const result = db.changePassword(req.session.user.id, currentPassword, newPassword);
 
   if (!result.success) {
-    return res.render('change_password', { error: result.message, success: null });
+    return renderView(res, 'change_password', { error: result.message, success: null });
   }
 
   db.addAuditLog(req.session.user.id, req.session.user.name, 'CHANGE_PASSWORD', 'Updated account password');
-  res.render('change_password', { error: null, success: 'Your password has been changed successfully!' });
+  renderView(res, 'change_password', { error: null, success: 'Your password has been changed successfully!' });
 });
 
 // ---------------- ADMIN PANEL ROUTES ----------------
@@ -350,7 +431,7 @@ app.post('/change-password', requireAuth, (req, res) => {
 app.get('/admin/users', requireAuth, requireAdmin, (req, res) => {
   res.locals.activeNav = 'admin_users';
   const users = db.getUsers();
-  res.render('admin_users', { users, error: null, success: null });
+  renderView(res, 'admin_users', { users, error: null, success: null });
 });
 
 // Admin Create User
@@ -360,7 +441,7 @@ app.post('/admin/users/create', requireAuth, requireAdmin, (req, res) => {
   const existing = db.getUserByLogin(email) || db.getUserByLogin(handle);
   if (existing) {
     const users = db.getUsers();
-    return res.render('admin_users', { users, error: 'User with this email or handle already exists.', success: null });
+    return renderView(res, 'admin_users', { users, error: 'User with this email or handle already exists.', success: null });
   }
 
   const newUser = db.createUser({
@@ -377,7 +458,7 @@ app.post('/admin/users/create', requireAuth, requireAdmin, (req, res) => {
   db.addAuditLog(req.session.user.id, req.session.user.name, 'ADMIN_CREATE_USER', `Created user ${newUser.name} (${newUser.email})`);
   
   const users = db.getUsers();
-  res.render('admin_users', { users, error: null, success: `Officer account for ${newUser.name} created successfully!` });
+  renderView(res, 'admin_users', { users, error: null, success: `Officer account for ${newUser.name} created successfully!` });
 });
 
 // Admin Edit / Remodify User
@@ -398,7 +479,7 @@ app.post('/admin/users/update', requireAuth, requireAdmin, (req, res) => {
   db.addAuditLog(req.session.user.id, req.session.user.name, 'ADMIN_UPDATE_USER', `Updated user details for ${name}`);
   
   const users = db.getUsers();
-  res.render('admin_users', { users, error: null, success: `Officer details for ${name} updated successfully!` });
+  renderView(res, 'admin_users', { users, error: null, success: `Officer details for ${name} updated successfully!` });
 });
 
 // Admin Reset Password
@@ -411,14 +492,14 @@ app.post('/admin/users/reset-password', requireAuth, requireAdmin, (req, res) =>
   }
 
   const users = db.getUsers();
-  res.render('admin_users', { users, error: null, success: `Password for ${updated ? updated.name : 'User'} reset successfully!` });
+  renderView(res, 'admin_users', { users, error: null, success: `Password for ${updated ? updated.name : 'User'} reset successfully!` });
 });
 
 // Admin Audit Logs
 app.get('/admin/audit-logs', requireAuth, requireAdmin, (req, res) => {
   res.locals.activeNav = 'audit_logs';
   const logs = db.getAuditLogs();
-  res.render('audit_logs', { logs });
+  renderView(res, 'audit_logs', { logs });
 });
 
 // Diagnostic Error Handler
