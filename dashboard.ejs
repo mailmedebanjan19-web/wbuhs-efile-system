@@ -1,141 +1,256 @@
-<%- include('partials/header', { title: 'Dashboard - WBUHS E-File System' }) %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - WBUHS E-File System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h3 class="fw-bold mb-1"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Officer Workspace Dashboard</h3>
-    <p class="text-muted mb-0">Welcome, <strong><%= currentUser.name %></strong> (<%= currentUser.designation %>, <%= currentUser.department %>)</p>
-  </div>
-  <div>
-    <a href="/create-file" class="btn btn-primary shadow-sm fw-bold">
-      <i class="fa-solid fa-file-circle-plus me-1"></i> Create New E-File
-    </a>
-  </div>
-</div>
-
-<!-- Stat Cards Row -->
-<div class="row g-4 mb-4">
-  <div class="col-md-3">
-    <div class="card stat-card bg-white border-start border-primary border-4 p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small fw-semibold">INBOX (PENDING ACTION)</div>
-          <div class="fs-2 fw-bold text-primary"><%= inboxFiles.length %></div>
-        </div>
-        <div class="stat-icon bg-primary">
-          <i class="fa-solid fa-inbox"></i>
-        </div>
+  <!-- Top Government Header -->
+  <header class="gov-header d-flex justify-content-between align-items-center">
+    <div class="gov-emblem-title">
+      <div class="wbuhs-logo-circle">
+        <i class="fa-solid fa-hospital-user"></i>
       </div>
-      <a href="/inbox" class="mt-2 small text-primary text-decoration-none fw-semibold">View Pending Inbox <i class="fa-solid fa-arrow-right ms-1"></i></a>
+      <div>
+        <h1 class="gov-title-main">The West Bengal University of Health Sciences</h1>
+        <p class="gov-sub-title"><i class="fa-solid fa-shield-halved"></i> e-Office / E-File Management Portal (Government of West Bengal)</p>
+      </div>
     </div>
-  </div>
+    
+    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <div class="d-flex align-items-center gap-3">
+        <form action="/search" method="GET" class="d-none d-md-flex align-items-center me-2">
+          <div class="input-group input-group-sm">
+            <input type="text" name="q" class="form-control border-secondary" placeholder="Search File No / Subject..." style="width: 200px;" required>
+            <button class="btn btn-warning text-dark fw-bold" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+        </form>
 
-  <div class="col-md-3">
-    <div class="card stat-card bg-white border-start border-info border-4 p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small fw-semibold">SENT / FORWARDED</div>
-          <div class="fs-2 fw-bold text-info"><%= outboxFiles.length %></div>
+        <div class="user-badge-header">
+          <i class="fa-solid fa-user-tie text-warning"></i>
+          <div>
+            <div class="fw-bold text-white fs-6"><%= currentUser.name %></div>
+            <small class="text-light" style="font-size: 0.75rem;"><%= currentUser.designation %> (<%= currentUser.role %>)</small>
+          </div>
         </div>
-        <div class="stat-icon bg-info">
-          <i class="fa-solid fa-paper-plane"></i>
+        <div class="dropdown">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-gear"></i> Account
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item" href="/change-password"><i class="fa-solid fa-key me-2 text-primary"></i> Change Password</a></li>
+            <% if (currentUser.role === 'SUPER ADMIN') { %>
+              <li><a class="dropdown-item" href="/admin/users"><i class="fa-solid fa-users-gear me-2 text-danger"></i> Admin User Control</a></li>
+            <% } %>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
+          </ul>
         </div>
-      </div>
-      <a href="/outbox" class="mt-2 small text-info text-decoration-none fw-semibold">View Sent Outbox <i class="fa-solid fa-arrow-right ms-1"></i></a>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card stat-card bg-white border-start border-success border-4 p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small fw-semibold">SYSTEM TOTAL FILES</div>
-          <div class="fs-2 fw-bold text-success"><%= totalFilesCount %></div>
-        </div>
-        <div class="stat-icon bg-success">
-          <i class="fa-solid fa-folder-tree"></i>
-        </div>
-      </div>
-      <span class="mt-2 small text-muted">All WBUHS E-Files</span>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card stat-card bg-white border-start border-warning border-4 p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="text-muted small fw-semibold">OFFICER ACCESS LEVEL</div>
-          <div class="fs-5 fw-bold text-warning"><%= currentUser.role %></div>
-        </div>
-        <div class="stat-icon bg-warning">
-          <i class="fa-solid fa-user-shield"></i>
-        </div>
-      </div>
-      <span class="mt-2 small text-muted"><%= currentUser.handle %></span>
-    </div>
-  </div>
-</div>
-
-<!-- Pending Files Table -->
-<div class="card shadow-sm border-0 mb-4">
-  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i> Files Requiring Your Action</h5>
-    <a href="/inbox" class="btn btn-outline-primary btn-sm">View All (<%= inboxFiles.length %>)</a>
-  </div>
-  <div class="card-body p-0">
-    <% if (inboxFiles.length === 0) { %>
-      <div class="text-center py-5 text-muted">
-        <i class="fa-solid fa-circle-check fs-1 text-success mb-2"></i>
-        <h6>No pending files in your inbox!</h6>
-        <p class="small">All files assigned to you have been processed.</p>
-      </div>
-    <% } else { %>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>File No</th>
-              <th>Subject</th>
-              <th>Category</th>
-              <th>Priority</th>
-              <th>Initiated By</th>
-              <th>Date</th>
-              <th class="text-end">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% inboxFiles.slice(0, 5).forEach(file => { %>
-              <tr>
-                <td class="fw-bold text-primary"><%= file.fileNo %></td>
-                <td>
-                  <div class="fw-semibold"><%= file.subject %></div>
-                  <small class="text-muted"><i class="fa-solid fa-paperclip"></i> <%= file.attachments ? file.attachments.length : 0 %> attachment(s)</small>
-                </td>
-                <td><span class="badge bg-light text-dark border"><%= file.category %></span></td>
-                <td>
-                  <% if (file.priority === 'Immediate') { %>
-                    <span class="badge bg-danger"><i class="fa-solid fa-bolt me-1"></i> Immediate</span>
-                  <% } else if (file.priority === 'Urgent') { %>
-                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Urgent</span>
-                  <% } else { %>
-                    <span class="badge bg-secondary">Normal</span>
-                  <% } %>
-                </td>
-                <td>
-                  <div class="small fw-semibold"><%= file.createdByName %></div>
-                </td>
-                <td class="small text-muted"><%= new Date(file.createdAt).toLocaleDateString('en-IN') %></td>
-                <td class="text-end">
-                  <a href="/file/<%= file.id %>" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-folder-open me-1"></i> Open & Process
-                  </a>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
       </div>
     <% } %>
-  </div>
-</div>
+  </header>
 
-<%- include('partials/footer') %>
+  <div class="main-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Navigation Menu</div>
+      <ul class="sidebar-menu">
+        <li>
+          <a href="/dashboard" class="active">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/create-file">
+            <i class="fa-solid fa-file-circle-plus"></i> Create New File
+          </a>
+        </li>
+        <li>
+          <a href="/inbox">
+            <i class="fa-solid fa-inbox"></i> Inbox (Pending Files)
+          </a>
+        </li>
+        <li>
+          <a href="/outbox">
+            <i class="fa-solid fa-paper-plane"></i> Sent / Forwarded Files
+          </a>
+        </li>
+        <li>
+          <a href="/contacts">
+            <i class="fa-solid fa-address-book"></i> Officers Directory
+          </a>
+        </li>
+        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'SUPER ADMIN') { %>
+          <div class="sidebar-heading mt-3">Admin Panel</div>
+          <li>
+            <a href="/admin/users">
+              <i class="fa-solid fa-user-gear text-warning"></i> User Management
+            </a>
+          </li>
+          <li>
+            <a href="/admin/audit-logs">
+              <i class="fa-solid fa-list-check text-info"></i> Audit Trail Logs
+            </a>
+          </li>
+        <% } %>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content-area">
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold mb-1"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Officer Workspace Dashboard</h3>
+          <p class="text-muted mb-0">Welcome, <strong><%= currentUser.name %></strong> (<%= currentUser.designation %>, <%= currentUser.department %>)</p>
+        </div>
+        <div>
+          <a href="/create-file" class="btn btn-primary shadow-sm fw-bold">
+            <i class="fa-solid fa-file-circle-plus me-1"></i> Create New E-File
+          </a>
+        </div>
+      </div>
+
+      <!-- Stat Cards Row -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="card stat-card bg-white border-start border-primary border-4 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small fw-semibold">INBOX (PENDING ACTION)</div>
+                <div class="fs-2 fw-bold text-primary"><%= inboxFiles.length %></div>
+              </div>
+              <div class="stat-icon bg-primary">
+                <i class="fa-solid fa-inbox"></i>
+              </div>
+            </div>
+            <a href="/inbox" class="mt-2 small text-primary text-decoration-none fw-semibold">View Pending Inbox <i class="fa-solid fa-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card stat-card bg-white border-start border-info border-4 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small fw-semibold">SENT / FORWARDED</div>
+                <div class="fs-2 fw-bold text-info"><%= outboxFiles.length %></div>
+              </div>
+              <div class="stat-icon bg-info">
+                <i class="fa-solid fa-paper-plane"></i>
+              </div>
+            </div>
+            <a href="/outbox" class="mt-2 small text-info text-decoration-none fw-semibold">View Sent Outbox <i class="fa-solid fa-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card stat-card bg-white border-start border-success border-4 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small fw-semibold">SYSTEM TOTAL FILES</div>
+                <div class="fs-2 fw-bold text-success"><%= totalFilesCount %></div>
+              </div>
+              <div class="stat-icon bg-success">
+                <i class="fa-solid fa-folder-tree"></i>
+              </div>
+            </div>
+            <span class="mt-2 small text-muted">All WBUHS E-Files</span>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card stat-card bg-white border-start border-warning border-4 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-muted small fw-semibold">OFFICER ACCESS LEVEL</div>
+                <div class="fs-5 fw-bold text-warning"><%= currentUser.role %></div>
+              </div>
+              <div class="stat-icon bg-warning">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+            </div>
+            <span class="mt-2 small text-muted"><%= currentUser.handle %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Files Table -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+          <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i> Files Requiring Your Action</h5>
+          <a href="/inbox" class="btn btn-outline-primary btn-sm">View All (<%= inboxFiles.length %>)</a>
+        </div>
+        <div class="card-body p-0">
+          <% if (inboxFiles.length === 0) { %>
+            <div class="text-center py-5 text-muted">
+              <i class="fa-solid fa-circle-check fs-1 text-success mb-2"></i>
+              <h6>No pending files in your inbox!</h6>
+              <p class="small">All files assigned to you have been processed.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>File No</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Initiated By</th>
+                    <th>Date</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% inboxFiles.slice(0, 5).forEach(file => { %>
+                    <tr>
+                      <td class="fw-bold text-primary"><%= file.fileNo %></td>
+                      <td>
+                        <div class="fw-semibold"><%= file.subject %></div>
+                        <small class="text-muted"><i class="fa-solid fa-paperclip"></i> <%= file.attachments ? file.attachments.length : 0 %> attachment(s)</small>
+                      </td>
+                      <td><span class="badge bg-light text-dark border"><%= file.category %></span></td>
+                      <td>
+                        <% if (file.priority === 'Immediate') { %>
+                          <span class="badge bg-danger"><i class="fa-solid fa-bolt me-1"></i> Immediate</span>
+                        <% } else if (file.priority === 'Urgent') { %>
+                          <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i> Urgent</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary">Normal</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="small fw-semibold"><%= file.createdByName %></div>
+                      </td>
+                      <td class="small text-muted"><%= new Date(file.createdAt).toLocaleDateString('en-IN') %></td>
+                      <td class="text-end">
+                        <a href="/file/<%= file.id %>" class="btn btn-primary btn-sm">
+                          <i class="fa-solid fa-folder-open me-1"></i> Open & Process
+                        </a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <footer class="bg-dark text-white-50 text-center py-3 fs-7 border-top border-secondary">
+    <div class="container">
+      <small>© 2026 The West Bengal University of Health Sciences (WBUHS). e-Office Portal.</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
