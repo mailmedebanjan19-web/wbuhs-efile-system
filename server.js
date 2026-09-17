@@ -24,22 +24,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Multi-path view directory resolver
+// Multi-path view directory resolver for Linux Render compatibility
 app.set('view engine', 'ejs');
 
-// Dynamically discover all directories containing .ejs files
-function getPossibleViewDirs(baseDir) {
-  const dirs = [
-    baseDir,
-    path.join(baseDir, 'views'),
-    path.join(baseDir, 'Views'),
-    path.join(baseDir, 'wbuhs-efile-system', 'views'),
-    path.join(baseDir, 'scratch', 'wbuhs-efile-system', 'views')
-  ];
-  return dirs.filter(d => fs.existsSync(d));
-}
+const possibleDirs = [
+  path.join(__dirname, 'views'),
+  path.join(__dirname, 'Views'),
+  path.join(__dirname),
+  path.join(__dirname, 'src', 'views'),
+  path.join(__dirname, 'src')
+].filter(d => fs.existsSync(d));
 
-app.set('views', getPossibleViewDirs(__dirname));
+app.set('views', possibleDirs);
 
 // Body parser & Static files
 app.use(express.urlencoded({ extended: true }));
@@ -79,73 +75,26 @@ function requireAdmin(req, res, next) {
 
 // Resilient View Render Helper
 function renderView(res, viewName, data) {
-  // Try standard Express render
   res.render(viewName, data, (err, html) => {
     if (!err) {
       return res.send(html);
     }
-    // Fallback: search for file manually
-    console.warn(`Express render error for ${viewName}:`, err.message);
+    console.warn(`Express render warning for ${viewName}:`, err.message);
     
-    // Check if view file exists in root or subfolders
-    const searchNames = [
-      `${viewName}.ejs`,
-      `${viewName}.EJS`,
-      `views/${viewName}.ejs`,
-      `Views/${viewName}.ejs`,
-      `wbuhs-efile-system/views/${viewName}.ejs`
+    // Fallback: search for view file directly
+    const searchPaths = [
+      path.join(__dirname, 'views', `${viewName}.ejs`),
+      path.join(__dirname, `${viewName}.ejs`),
+      path.join(__dirname, 'src', 'views', `${viewName}.ejs`)
     ];
 
-    for (const sName of searchNames) {
-      const fullPath = path.join(__dirname, sName);
-      if (fs.existsSync(fullPath)) {
-        return res.sendFile(fullPath);
+    for (const p of searchPaths) {
+      if (fs.existsSync(p)) {
+        return res.render(p, data);
       }
     }
 
-    // Emergency embedded login fallback if views folder wasn't pushed to git
-    if (viewName === 'login') {
-      return res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Login - WBUHS E-File System</title>
-          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-        </head>
-        <body class="bg-light">
-          <div class="container py-5">
-            <div class="row justify-content-center">
-              <div class="col-md-5">
-                <div class="card shadow-lg border-0">
-                  <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0 fw-bold">The West Bengal University of Health Sciences</h4>
-                    <small>e-Office / E-File Management Portal</small>
-                  </div>
-                  <div class="card-body p-4">
-                    ${data && data.error ? `<div class="alert alert-danger">${data.error}</div>` : ''}
-                    <form action="/login" method="POST">
-                      <div class="mb-3">
-                        <label class="form-label fw-bold">Email / User ID / Handle</label>
-                        <input type="text" name="login" class="form-control" placeholder="e.g. vc@wbuhs.ac.in or programmer_4" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-bold">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Enter password" required>
-                      </div>
-                      <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Officer Login</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `);
-    }
-
-    res.status(500).send(`View render error: ${err.message}`);
+    res.status(500).send(`Render View Error: ${err.message}`);
   });
 }
 
