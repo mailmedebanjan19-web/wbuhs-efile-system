@@ -24,9 +24,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// View engine setup
+// View engine setup (supports both views and Views for Linux case-sensitivity)
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', [
+  path.join(__dirname, 'views'),
+  path.join(__dirname, 'Views'),
+  path.join(__dirname, 'src', 'views'),
+  path.join(__dirname, 'src', 'Views')
+]);
 
 // Body parser & Static files
 app.use(express.urlencoded({ extended: true }));
@@ -414,6 +419,18 @@ app.get('/admin/audit-logs', requireAuth, requireAdmin, (req, res) => {
   res.locals.activeNav = 'audit_logs';
   const logs = db.getAuditLogs();
   res.render('audit_logs', { logs });
+});
+
+// Diagnostic Error Handler
+app.use((err, req, res, next) => {
+  console.error('SERVER ERROR:', err.stack || err);
+  res.status(500).send(`
+    <div style="font-family: sans-serif; padding: 30px; background: #fff3f3; color: #900; border: 1px solid #f99; border-radius: 8px; max-width: 800px; margin: 40px auto;">
+      <h2>WBUHS e-Office Server Error Diagnostic</h2>
+      <p><strong>Message:</strong> ${err.message}</p>
+      <pre style="background: #222; color: #0f0; padding: 15px; border-radius: 4px; overflow-x: auto;">${err.stack}</pre>
+    </div>
+  `);
 });
 
 // Start Server
